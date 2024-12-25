@@ -7,7 +7,7 @@ from train.train import PPOConfig
 from utils.utils import save
 
 
-model_path = r'E:\files\code\硕士论文code\Chaper2\train\results\models\ppomodel\env5\env5_ActorCritic_net_step900.pth'
+model_path = r'E:\files\code\硕士论文code\Chaper2\finalresult\savemodel\env4\ppo\env4_ActorCritic_net_step1000.pth'
 
 
 def load_ppo_model(env, model_path, args):
@@ -59,12 +59,14 @@ def test_model():
                 action, _, _ = agent.ac(state_tensor)
                 action = action.cpu().numpy()
 
+
             next_state, reward, done, info = env.step(action)
             path_points.append(env.position.copy())
 
             episode_reward += reward
             steps += 1
             state = next_state
+            print(f'state:{state}, action:{action}')
 
             if done:
                 if info.get('distance_to_goal', 1) < env.delta / env.max_distance:

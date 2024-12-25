@@ -6,6 +6,8 @@ import os
 from datetime import datetime
 import seaborn as sns
 from matplotlib.patches import Rectangle
+import math
+
 
 class TrainingLogger:
     def __init__(self, args):
@@ -244,9 +246,9 @@ def save(path_points, obstacles, env, args, episode_idx):
 
     ax1.plot(path_points[:, 0], path_points[:, 1], path_points[:, 2], 'b-', label='路径', linewidth=2)
     ax1.scatter(path_points[0, 0], path_points[0, 1], path_points[0, 2],
-                color='g', s=100, label='起点')
+                color='g', s=80, label='起点')
     ax1.scatter(path_points[-1, 0], path_points[-1, 1], path_points[-1, 2],
-                color='r', s=100, label='终点')
+                color='r', s=80, label='终点')
     ax1.set_xlabel('X轴')
     ax1.set_ylabel('Y轴')
     ax1.set_zlabel('Z轴')
@@ -307,3 +309,39 @@ def save(path_points, obstacles, env, args, episode_idx):
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
     return save_dir
+
+
+
+def convert_obstacles(env):
+    test_obstacles = []
+    for obstacle in env:
+        # 将一个障碍物的多个部分展开为一个元组
+        flattened = tuple(value for segment in obstacle for value in segment)
+        test_obstacles.append(flattened)
+    return test_obstacles
+
+
+# teacher模型计算路径长度
+def calculate_path_length(path):
+    """
+    计算路径的总长度。
+
+    :param path: 一个包含路径点的列表，每个点是一个三元组 (x, y, z)
+    :return: 路径的总长度
+    """
+    if len(path) < 2:
+        return 0  # 如果路径点少于两个，总长度为 0
+
+    total_length = 0
+    for i in range(1, len(path)):
+        # 计算相邻点之间的欧几里得距离
+        point1 = path[i - 1]
+        point2 = path[i]
+        distance = math.sqrt(
+            (point2[0] - point1[0]) ** 2 +
+            (point2[1] - point1[1]) ** 2 +
+            (point2[2] - point1[2]) ** 2
+        )
+        total_length += distance
+
+    return total_length

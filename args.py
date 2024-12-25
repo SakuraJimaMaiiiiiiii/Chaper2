@@ -7,8 +7,8 @@ def get_args():
     parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3'], default='td3',
                       help ='选择训练算法(ppo或td3)')
 
-    parser.add_argument('--env_type', type=str, choices=['env3', 'env4', 'env5'], 
-                      default='env5', help='选择环境类型')
+    parser.add_argument('--env_type', type=str, choices=['env3', 'env4', 'env5', 'env1', 'env2', 'env3'],
+                      default='env3', help='选择环境类型')
     parser.add_argument('--render', type=bool, default=False, help='是否渲染环境') 
     parser.add_argument('--seed', type=int, default=42, help='随机种子')
     parser.add_argument('--max_episodes', type=int, default=1000, help='最大训练回合数')
@@ -42,7 +42,7 @@ def get_args():
     
     # 经验回放相关参数
     parser.add_argument('--use_per', type=bool, default=False, help='是否使用优先经验回放')  # 默认开启PER
-    parser.add_argument('--use_her', type=bool, default=False, help='是否使用HER')  # 默认开启HER
+    parser.add_argument('--use_her', type=bool, default=True, help='是否使用HER')  # 默认开启HER
     parser.add_argument('--buffer_size', type=int, default=1000000, help='回放缓冲区大小')
     parser.add_argument('--k_goals', type=int, default=4, help='HER中使用的额外目标数')
     parser.add_argument('--per_alpha', type=float, default=0.6, help='PER alpha参数')
@@ -50,9 +50,16 @@ def get_args():
     parser.add_argument('--per_beta_increment', type=float, default=0.001, help='PER beta增长率')
     parser.add_argument('--per_epsilon', type=float, default=0.01, help='PER epsilon参数')
     parser.add_argument('--reward_scale', type=float, default=1.0, help='奖励缩放因子')
-    
-    args = parser.parse_args()
 
+
+    # teacher算法设置
+    parser.add_argument('--teacher', type=str, default='RRT', choices=['RRT', 'RRTStar', 'RRTStarBidirectional', 'Astar'], help='教师算法')
+
+
+
+
+
+    args = parser.parse_args()
     return args
 
 
@@ -62,7 +69,7 @@ def get_test_args():
     parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3'], default='td3',
                       help='选择测试算法(ppo或td3)')
     parser.add_argument('--env_type', type=str, choices=['env1', 'env2', 'env3', 'env4', 'env5'],
-                      default='env5', help='选择环境类型')
+                      default='env4', help='选择环境类型')
     parser.add_argument('--render', type=bool, default=True,
                       help='是否渲染环境')
     parser.add_argument('--test_episodes', type=int, default=10,

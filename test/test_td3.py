@@ -5,9 +5,11 @@ from agent.td3 import TD3
 from args import get_test_args
 from utils.utils import save
 
-model_path1 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env5\actor\Actor_net_step1000.pth'
-model_path2 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env5\critic1\Critic1_net_step1000.pth'
-model_path3 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env5\critic2\Critic2_net_step1000.pth'
+
+
+model_path1 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env4\actor\Actor_net_step1000.pth'
+model_path2 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env4\critic1\Critic1_net_step1000.pth'
+model_path3 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env4\critic2\Critic2_net_step1000.pth'
 
 
 

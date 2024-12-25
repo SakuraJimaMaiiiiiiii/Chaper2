@@ -154,12 +154,28 @@ def _draw_obstacle(ax,x1, y1, z1, x2, y2, z2):
     ax.plot_surface(xx, np.full_like(xx, y1), zz, color='gray', alpha=1)
     ax.plot_surface(xx, np.full_like(xx, y2), zz, color='gray', alpha=1)
 
+def convert_env3_to_obstacles(env):
+    obstacles = []
+    for obstacle in env:
+        (x1, y1, z1), (x2, y2, z2) = obstacle
+        # 找出 x, y, z 的最小值和最大值
+        x_min, x_max = min(x1, x2), max(x1, x2)
+        y_min, y_max = min(y1, y2), max(y1, y2)
+        z_min, z_max = min(z1, z2), max(z1, z2)
+        # 保持原始坐标
+        obstacles.append((
+            x_min, y_min, z_min, x_max, y_max, z_max
+        ))
+    return obstacles
+
+
 
 
 if __name__ == '__main__':
+
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
-    for (x1, y1, z1), (x2, y2, z2) in env3:
+    for (x1, y1, z1), (x2, y2, z2) in env5:
         _draw_obstacle(ax,x1, y1, z1, x2, y2, z2)
 
     set_axes_equal(ax)
