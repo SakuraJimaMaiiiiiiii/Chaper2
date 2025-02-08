@@ -1,7 +1,7 @@
 import torch
 import torch.optim as optim
 import numpy as np
-from nn_net.net import  Actor, Critic
+from nn_net.net import Actor, Critic
 import copy
 from Buffer.replaybuffer import ReplayBuffer
 import torch.nn as nn
@@ -143,10 +143,15 @@ class TD3:
         torch.save(self.critic_1.state_dict(), filename2)
         torch.save(self.critic_2.state_dict(), filename3)
 
-    def load(self, filename1,filename2,filename3):
-        self.actor.load_state_dict(torch.load(filename1))
-        self.actor_target = copy.deepcopy(self.actor)
-        self.critic_1.load_state_dict(torch.load(filename2))
-        self.critic_target_1 = copy.deepcopy(self.critic_1)
-        self.critic_2.load_state_dict(torch.load(filename3))
-        self.critic_target_2 = copy.deepcopy(self.critic_2)
+    def load(self, actor_path, critic1_path, critic2_path, device):
+        """
+        加载模型参数
+        Args:
+            actor_path: Actor网络参数路径
+            critic1_path: Critic1网络参数路径
+            critic2_path: Critic2网络参数路径
+            device: 设备(cpu/cuda)
+        """
+        self.actor.load_state_dict(torch.load(actor_path, map_location=device))
+        self.critic_1.load_state_dict(torch.load(critic1_path, map_location=device))
+        self.critic_2.load_state_dict(torch.load(critic2_path, map_location=device))

@@ -1,3 +1,7 @@
+import sys
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import torch
 from env.environment import Environment
@@ -7,18 +11,19 @@ from utils.utils import save
 
 
 
-model_path1 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env4\actor\Actor_net_step1000.pth'
-model_path2 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env4\critic1\Critic1_net_step1000.pth'
-model_path3 = r'E:\files\code\硕士论文code\Chaper2\train\results\models\td3model\env4\critic2\Critic2_net_step1000.pth'
+
+model_path1 = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\models\td3model\env3\actor\Actor_net_step1000.pth'
+model_path2 = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\models\td3model\env3\critic1\Critic1_net_step1000.pth'
+model_path3 = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\td3model\env3\critic2\Critic2_net_step1000.pth'
 
 
 
-def load_td3_model(env, model_path1, modelpath2, modelpath3):
+def load_td3_model(env, model_path1, modelpath2, modelpath3,device):
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
     agent = TD3(state_dim, action_dim, max_action)
-    agent.load(model_path1, modelpath2, modelpath3)
+    agent.load(model_path1, modelpath2, modelpath3,device)
     return agent
 
 
@@ -32,7 +37,7 @@ def test_model():
 
     env = Environment(render_mode=args.render, env_type=args.env_type)
 
-    agent = load_td3_model(env, model_path1, model_path2, model_path3)
+    agent = load_td3_model(env, model_path1, model_path2, model_path3,device)
 
 
 
@@ -42,6 +47,7 @@ def test_model():
     print(f"模型路径: {model_path1}\n"
           f"{model_path2}\n"
           f"{model_path3}")
+
 
     total_rewards = []
     total_steps = []
@@ -58,7 +64,6 @@ def test_model():
         while True:
             if args.render:
                 env.render()
-
             action = agent.select_action(state)
             next_state, reward, done, info = env.step(action)
             path_points.append(env.position.copy())

@@ -1,3 +1,6 @@
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from teacher.astar_tools.Astar import Astar
 from args import get_args
 from env.environment import Environment
@@ -10,47 +13,93 @@ import random
 from utils.utils import calculate_path_length
 
 
-start_time = time.time()
-args = get_args()
-random.seed(args.seed)
-env = Environment(env_type=args.env_type)
-obstacle = env.obstacles
-start = (env.start).tolist()
-goal = (env.goal).tolist()
+def Astar_teacher(args, Plot_=False):
+    random.seed(int(time.time() * 1000))
+    env = Environment(env_type=args.env_type)
+    obstacle = env.obstacles
+    start = (env.start).tolist()
+    goal = (env.goal).tolist()
+
+    # print(f"\n{'=' * 20} 训练配置 {'=' * 20}")
+    # print(f"\n算法: {args.teacher}")
+    # print(f"环境: {args.env_type}")
+    # print(f"随机种子: {args.seed}")
+
+    if args.teacher == 'Astar':
+        path = Astar(start, goal, obstacle)
+        path = list(map(tuple, path))
+    else:
+        print('请选择Astar算法')
+
+    # print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path)}\n")
+
+    if Plot_ == True:
+        # plot
+        grid_size = env.grid_size
+        X_dimensions = np.array([(0, grid_size), (0, grid_size), (0, grid_size)])
+        obstacles = np.array(convert_obstacles(env.obstacles))
+        X = SearchSpace(X_dimensions, obstacles)
+
+        plot = Plot("Astar_noc")
+        if path is not None:
+            plot.plot_path(X, path)
+        plot.plot_obstacles(X, obstacles)
+        plot.plot_start(X, start)
+        plot.plot_goal(X, goal)
+        plot.draw(auto_open=False)
+
+    return path
 
 
-print(f"\n{'=' * 20} 训练配置 {'=' * 20}")
-print(f"\n算法: {args.teacher}")
-print(f"环境: {args.env_type}")
-print(f"随机种子: {args.seed}")
+if __name__ == '__main__':
+    args = get_args()
 
+    start_time = time.time()
+    path = Astar_teacher(args, Plot_=True)
+    end_time = time.time()
+    print(f"运行时间: {end_time - start_time:.2f} 秒")
 
-
-
-path = Astar(start, goal, obstacle)
-path = list(map(tuple, path))
-
-end_time = time.time()
-
-
-print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path)}\n")
-print(f"运行时间: {end_time - start_time:.2f} 秒")
-
-
-
-
-
-# plot
-grid_size = env.grid_size
-X_dimensions = np.array([(0, grid_size), (0, grid_size), (0, grid_size)])
-obstacles = np.array(convert_obstacles(env.obstacles))
-X = SearchSpace(X_dimensions, obstacles)
-
-
-plot = Plot("Astar")
-if path is not None:
-    plot.plot_path(X, path)
-plot.plot_obstacles(X, obstacles)
-plot.plot_start(X, start)
-plot.plot_goal(X, goal)
-plot.draw(auto_open=False)
+# start_time = time.time()
+# args = get_args()
+# random.seed(args.seed)
+# env = Environment(env_type=args.env_type)
+# obstacle = env.obstacles
+# start = (env.start).tolist()
+# goal = (env.goal).tolist()
+#
+#
+# print(f"\n{'=' * 20} 训练配置 {'=' * 20}")
+# print(f"\n算法: {args.teacher}")
+# print(f"环境: {args.env_type}")
+# print(f"随机种子: {args.seed}")
+#
+#
+#
+#
+# path = Astar(start, goal, obstacle)
+# path = list(map(tuple, path))
+#
+# end_time = time.time()
+#
+#
+# print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path)}\n")
+# print(f"运行时间: {end_time - start_time:.2f} 秒")
+#
+#
+#
+#
+#
+# # plot
+# grid_size = env.grid_size
+# X_dimensions = np.array([(0, grid_size), (0, grid_size), (0, grid_size)])
+# obstacles = np.array(convert_obstacles(env.obstacles))
+# X = SearchSpace(X_dimensions, obstacles)
+#
+#
+# plot = Plot("Astar")
+# if path is not None:
+#     plot.plot_path(X, path)
+# plot.plot_obstacles(X, obstacles)
+# plot.plot_start(X, start)
+# plot.plot_goal(X, goal)
+# plot.draw(auto_open=False)

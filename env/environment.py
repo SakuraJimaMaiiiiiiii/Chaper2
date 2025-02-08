@@ -101,10 +101,10 @@ class Environment(gym.Env):
         relative_position = (self.goal - self.position) / self.grid_size  # 相对位置 len/grid_size
         normalized_distance = current_distance / self.max_distance  # 归一化距离 len/√3grid_size  范围：(0,1)
         direction_to_goal = (self.goal - self.position) / (np.linalg.norm(self.goal - self.position) + 1e-8)  # 归一化方向向量 position -> goal
-        scalar_distance = current_distance / self.max_distance  # 标量距离
+        abs_distance = current_distance   # 绝对距离
         sensor_readings = self._get_sensor_readings() / self.sensor_range  # 传感器读数
         # 构建观测
-        state = np.concatenate((relative_position, [normalized_distance], direction_to_goal, [scalar_distance], sensor_readings))
+        state = np.concatenate((relative_position, [normalized_distance], direction_to_goal, [abs_distance], sensor_readings))
         return state
 
     def step(self, action):

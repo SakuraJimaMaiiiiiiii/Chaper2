@@ -19,7 +19,7 @@ class TrainingLogger:
         self.window_size = 20
         
        
-        plt.style.use('seaborn-v0_8')
+        plt.style.use('seaborn')
         mpl.rcParams['font.sans-serif'] = ['SimHei']
         mpl.rcParams['font.family'] = 'sans-serif'
         mpl.rcParams['axes.unicode_minus'] = False
@@ -31,7 +31,7 @@ class TrainingLogger:
         mpl.rcParams['axes.labelsize'] = 12
         
         # 创建日志目录
-        self.log_dir = f"logs/{args.algorithm}_{args.env_type}"
+        self.log_dir = f"logs/{args.algorithm}_{args.env_type}_{args.seed}"
         os.makedirs(self.log_dir, exist_ok=True)
         
         # 设置Seaborn样式
@@ -232,6 +232,7 @@ def show_obs2(ax, coords, plane='xy'):
 def save(path_points, obstacles, env, args, episode_idx):
     save_dir = f"test_results/{args.algorithm}_{args.env_type}"
     os.makedirs(save_dir, exist_ok=True)
+    print(save_dir)
 
     path_points = np.array(path_points)
 

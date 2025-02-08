@@ -1,20 +1,21 @@
 import argparse
 
+
 def get_args():
     parser = argparse.ArgumentParser()
-    
+
     # 通用参数
-    parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3'], default='td3',
-                      help ='选择训练算法(ppo或td3)')
+    parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3','Dagger'], default='td3',
+                        help='选择训练算法(ppo或td3)')
 
     parser.add_argument('--env_type', type=str, choices=['env3', 'env4', 'env5', 'env1', 'env2', 'env3'],
-                      default='env3', help='选择环境类型')
-    parser.add_argument('--render', type=bool, default=False, help='是否渲染环境') 
-    parser.add_argument('--seed', type=int, default=42, help='随机种子')
+                        default='env3', help='选择环境类型')
+
+    parser.add_argument('--render', type=bool, default=False, help='是否渲染环境')
+    parser.add_argument('--seed', type=int, default=22, choices=[42, 32, 22], help='随机种子')
     parser.add_argument('--max_episodes', type=int, default=1000, help='最大训练回合数')
 
-    parser.add_argument('--model_path', type=str, default='models/td3_env5', help='模型保存路径')
-
+    parser.add_argument('--model_path', type=str, default='models/td3_env3', help='模型保存路径')
 
     # PPO特定参数
     parser.add_argument('--ppo_gamma', type=float, default=0.99, help='PPO折扣因子')
@@ -26,9 +27,7 @@ def get_args():
     parser.add_argument('--ppo_batch_size', type=int, default=5000, help='PPO batch大小')
     parser.add_argument('--ppo_minibatch_size', type=int, default=64, help='PPO minibatch大小')
     parser.add_argument('--ppo_max_ep_len', type=int, default=200, help='PPO最大回合长度')
-    
-    
-    
+
     # TD3特定参数
     parser.add_argument('--td3_lr', type=float, default=3e-4, help='TD3学习率')
     parser.add_argument('--td3_batch_size', type=int, default=100, help='TD3 batch大小')
@@ -39,7 +38,7 @@ def get_args():
     parser.add_argument('--td3_policy_freq', type=int, default=2, help='策略更新频率')
     parser.add_argument('--td3_tau', type=float, default=0.005, help='软更新参数')
     parser.add_argument('--td3_gamma', type=float, default=0.99, help='TD3折扣因子')
-    
+
     # 经验回放相关参数
     parser.add_argument('--use_per', type=bool, default=False, help='是否使用优先经验回放')  # 默认开启PER
     parser.add_argument('--use_her', type=bool, default=True, help='是否使用HER')  # 默认开启HER
@@ -51,13 +50,12 @@ def get_args():
     parser.add_argument('--per_epsilon', type=float, default=0.01, help='PER epsilon参数')
     parser.add_argument('--reward_scale', type=float, default=1.0, help='奖励缩放因子')
 
-
     # teacher算法设置
-    parser.add_argument('--teacher', type=str, default='RRT', choices=['RRT', 'RRTStar', 'RRTStarBidirectional', 'Astar'], help='教师算法')
-
-
-
-
+    parser.add_argument('--teacher', type=str, default='TD3',
+                        choices=['RRT', 'RRTStar', 'RRTStarBidirectional', 'Astar', 'TD3'], help='教师算法')
+    parser.add_argument('--BC_batch_size', type=int, default=10, help='BC Batch大小')
+    parser.add_argument('--sample_data', type=str,choices=['expert',' td3'], default='td3', help='选择专家数据来源')
+    parser.add_argument('--Gail_batch_size', type=int, default=10, help='Gail Batch大小')
 
     args = parser.parse_args()
     return args
@@ -66,21 +64,21 @@ def get_args():
 def get_test_args():
     parser = argparse.ArgumentParser()
     # 测试代码的参数
-    parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3'], default='td3',
-                      help='选择测试算法(ppo或td3)')
+    parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3','Dagger','GAIL'], default='Dagger',
+                        help='选择测试算法(ppo或td3)')
     parser.add_argument('--env_type', type=str, choices=['env1', 'env2', 'env3', 'env4', 'env5'],
-                      default='env4', help='选择环境类型')
+                        default='env3', help='选择环境类型')
     parser.add_argument('--render', type=bool, default=True,
-                      help='是否渲染环境')
-    parser.add_argument('--test_episodes', type=int, default=10,
-                      help='测试回合数')
-    
+                        help='是否渲染环境')
+    parser.add_argument('--test_episodes', type=int, default=5,
+                        help='测试回合数')
+
     # 模型加载参数
     parser.add_argument('--episode', type=int, default=400,
-                      help='加载第几回合的模型，如果不指定则加载final模型')
+                        help='加载第几回合的模型，如果不指定则加载final模型')
     parser.add_argument('--model_dir', type=str, default='models/td3_env3',
-                      help='模型所在目录')
-    
+                        help='模型所在目录')
+
     # PPO特定参数 (与训练时相同的默认值)
     parser.add_argument('--ppo_gamma', type=float, default=0.99, help='PPO折扣因子')
     parser.add_argument('--ppo_lam', type=float, default=0.95, help='GAE lambda参数')
@@ -91,13 +89,13 @@ def get_test_args():
     parser.add_argument('--ppo_batch_size', type=int, default=5000, help='PPO batch大小')
     parser.add_argument('--ppo_minibatch_size', type=int, default=64, help='PPO minibatch大小')
     parser.add_argument('--ppo_max_ep_len', type=int, default=200, help='PPO最大回合长度')
-    
+
     args = parser.parse_args()
 
     # 设置模型路径
 
     print("\n测试配置:")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"算法: {args.algorithm}")
     print(f"环境: {args.env_type}")
     print(f"渲染: {'开启' if args.render else '关闭'}")
@@ -108,6 +106,6 @@ def get_test_args():
         print(f"  GAE lambda: {args.ppo_lam}")
         print(f"  剪切比例: {args.ppo_clip_ratio}")
         print(f"  最大回合长度: {args.ppo_max_ep_len}")
-    print(f"{'='*50}\n")
-    
+    print(f"{'=' * 50}\n")
+
     return args

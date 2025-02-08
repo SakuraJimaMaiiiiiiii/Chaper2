@@ -1,3 +1,7 @@
+import sys
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import torch
 from env.environment import Environment
@@ -7,7 +11,7 @@ from train.train import PPOConfig
 from utils.utils import save
 
 
-model_path = r'E:\files\code\硕士论文code\Chaper2\finalresult\savemodel\env4\ppo\env4_ActorCritic_net_step1000.pth'
+model_path = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\models\ppomodel\env3\env3_ActorCritic_net_step1000.pth'
 
 
 def load_ppo_model(env, model_path, args):
@@ -15,7 +19,7 @@ def load_ppo_model(env, model_path, args):
     # 创建PPO配置
     config = PPOConfig(args)
     agent = PPO(env, config)
-    agent.ac.load_state_dict(torch.load(model_path))
+    agent.ac.load_state_dict(torch.load(model_path,map_location='cpu'))
     return agent
 
 
@@ -50,8 +54,8 @@ def test_model():
         print(f"\n测试回合 {i + 1}/{args.test_episodes}")
 
         while True:
-            if args.render:
-                env.render()
+            # if args.render:
+            #     env.render()
 
 
             with torch.no_grad():
@@ -66,7 +70,7 @@ def test_model():
             episode_reward += reward
             steps += 1
             state = next_state
-            print(f'state:{state}, action:{action}')
+
 
             if done:
                 if info.get('distance_to_goal', 1) < env.delta / env.max_distance:
