@@ -4,9 +4,11 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from env.environment import Environment
 import numpy as np
-from utils.utils import save
+from utils.utils import save_3d,calculate_path_length
 from args import get_test_args
 from student.GAIL import GAIL
+import time
+from curvature_plot3d import compute_total_curvature
 
 
 def load_Gail_model(env, env_type):
@@ -15,14 +17,24 @@ def load_Gail_model(env, env_type):
     max_action = float(env.action_space.high[0])
 
     agent1 = GAIL(state_dim, action_dim, max_action)
-    agent1.load_model(env_type, 999)
+    agent1.load_model(env_type, 499)
     return agent1
+
+def load_model(env,filename):
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.shape[0]
+    max_action = float(env.action_space.high[0])
+
+    agent = GAIL(state_dim, action_dim, max_action)
+    agent.load(filename)
+    return agent
 
 
 # args 为get_test_args
-def test_gail(args):
+def test_gail(args, filename):
     env = Environment(env_type=args.env_type)
-    agent = load_Gail_model(env, args.env_type)
+    # agent = load_Gail_model(env, args.env_type)
+    agent = load_model(env,filename)
 
     print(f"\n{'=' * 20} 开始测试 {'=' * 20}")
     print(f"算法: gail")
@@ -40,7 +52,7 @@ def test_gail(args):
         path_points = [env.position.copy()]
 
         print(f"\n测试回合 {i + 1}/{args.test_episodes}")
-
+        start_time = time.time()
         while True:
             if args.render:
                 env.render()
@@ -64,12 +76,26 @@ def test_gail(args):
 
             print(f"回合奖励: {episode_reward:.2f}")
             print(f"步数: {steps}")
-            save(path_points, env.obstacles, env, args, i)
+            save_3d(path_points, env.obstacles, env, args, i)
+            '''
+            保存路径
+            '''
+            dir = r'E:\files\code\硕士论文code\Chaper2'
+            point_path = f"{dir}/GAIL.txt"
+            with open(point_path, 'w') as f:
+                for point in path_points:
+                    f.write(f"{point}\n")
+            print(f'路径已保存至{point_path}')
 
+
+        end_time = time.time()
         print(f"\n{'=' * 20} 测试结果 {'=' * 20}")
         print(f"平均奖励: {np.mean(total_rewards):.2f} ± {np.std(total_rewards):.2f}")
         print(f"平均步数: {np.mean(total_steps):.2f} ± {np.std(total_steps):.2f}")
         print(f"成功率: {success_count / args.test_episodes * 100:.2f}%")
+        print(f"运行时间: {end_time - start_time:.2f} 秒")
+        print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path_points)}")
+        print(f"\n{'=' * 20} 路径曲率 {'=' * 20} \n{compute_total_curvature(path_points)}")
 
 
         env.close()
@@ -77,4 +103,5 @@ def test_gail(args):
 
 if __name__ == '__main__':
     args = get_test_args()
-    test_gail(args)
+    filename = r'E:\files\code\硕士论文code\Chaper2\student\models\env4\GAIL\seed_42\GAIL_final.pth'
+    test_gail(args, filename)

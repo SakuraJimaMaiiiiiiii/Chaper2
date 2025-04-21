@@ -134,7 +134,7 @@ def train_ppo(args):
     print(f"\n{'=' * 20} 训练结束 {'=' * 20}")
     print(f"总用时: {training_time}")
 
-    logger.save_all()
+    logger.save_all(args.seed)
 
     env.close()
 
@@ -153,10 +153,11 @@ def set_seed(seed):
 if __name__ == '__main__':
 
     args = get_args()
+    args.env_type = 'env5'
 
     # os.makedirs(args.model_path, exist_ok=True)
 
-    set_seed(args.seed)
+    set_seed(32)
 
     print("\n训练配置:")
     print(f"算法: PPO")

@@ -89,12 +89,14 @@ def evaluate_astar_reward(args, path):
         #     print(f"Got: {env_copy.position}")
     
     return total_reward
+
 def get_pair(env, args):
     teacher = args.teacher
-    samples = 100
+    samples = 1000
     pairs = []
     states = []
     actions = []
+    path = []
     for i in range(samples):
         if teacher == 'Astar':
             path = Astar_teacher(args)
@@ -121,9 +123,6 @@ def get_pair(env, args):
                 states.append(state[j])
                 actions.append(action[j])
     return pairs, states, actions
-
-
-
 
 
 

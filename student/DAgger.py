@@ -13,6 +13,8 @@ import os
 from env.environment import Environment
 from student.get_data import load_td3_model, sample_td3_data, sample_expert_data
 import random
+from utils.utils import TrainingLogger
+
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -108,7 +110,7 @@ def train_DAgger(args, expert_data):
     
     agent = DAgger(state_dim, action_dim, max_action)
     expert_agent = load_td3_model(env)
-    
+    logger = TrainingLogger(args)
     # 加载初始专家数据
     # expert_data = np.load(f'expert_data/env3/Astar_data.npy', allow_pickle=True).item()
 
@@ -122,6 +124,7 @@ def train_DAgger(args, expert_data):
     batch_size = 256
     return_list = []
     episode_list = []
+    episode = 0
     
     print(f"\n{'='*20} 开始训练 {'='*20}")
     
@@ -165,7 +168,8 @@ def train_DAgger(args, expert_data):
                     current_reward = get_reward(agent_copy, env, 5)
                     return_list.append(current_reward)
                     episode_list.append(i + 1 + dagger_iter * episodes)
-                    
+                    episode += 1
+                    logger.log_episode(current_reward,episode)
                     print(f"\nDAgger Iter {dagger_iter + 1}, Episode {i + 1}:")
                     print(f"Reward = {current_reward:.2f}")
                     print(f"Dataset Size = {len(all_states)}")
@@ -177,7 +181,7 @@ def train_DAgger(args, expert_data):
     save_dir = f'results/models/DAgger/{args.env_type}'
     os.makedirs(save_dir, exist_ok=True)
     agent.save(f'{save_dir}/DAgger_final.pth')
-    
+    logger.save_all()
     plot_training_curve(episode_list, return_list, args)
     
     return return_list
@@ -233,6 +237,8 @@ if __name__ == '__main__':
     parser.add_argument("--dagger_iters", default=5, type=int)
     parser.add_argument("--save_freq", default=100, type=int)
     parser.add_argument("--render", default=False, action='store_true')
+    parser.add_argument('--algorithm', type=str, default='BC',help='选择训练算法(ppo或td3)')
+    parser.add_argument('--seed', type=int, default=22, choices=[42, 32, 22], help='随机种子')
     args = parser.parse_args()
 
     set_seed(args.seed)

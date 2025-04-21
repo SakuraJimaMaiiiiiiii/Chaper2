@@ -6,54 +6,69 @@ import random
 from env.environment import Environment
 from teacher.Astar_teacher import Astar_teacher
 from args import get_test_args
-from train.train import PPOConfig
+# from train.train import PPOConfig
 import torch
 
-def load_td3_model(env, device='cpu'):
+
+def load_td3_model(env, env_name,device='cpu'):
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
     agent = TD3(state_dim, action_dim, max_action)
 
-    model_path1 = r'..\finalresult\savemodel\env3\td3\Actor_net_step1000.pth'
-    model_path2 = r'..\finalresult\savemodel\env3\td3\Critic1_net_step1000.pth'
-    model_path3 = r'..\finalresult\savemodel\env3\td3\Critic2_net_step1000.pth'
+    model_path1 = f'../finalresult/savemodel/{env_name}/td3/Actor_net_step1000.pth'
+    # model_path1 = r'..\finalresult\savemodel\env3\td3\Actor_net_step1000.pth'
+    model_path2 = f'../finalresult/savemodel/{env_name}/td3/Critic1_net_step1000.pth'
+    # model_path2 = r'..\finalresult\savemodel\env3\td3\Critic1_net_step1000.pth'
+    model_path3 = f'../finalresult/savemodel/{env_name}/td3/Critic2_net_step1000.pth'
+    # model_path3 = r'..\finalresult\savemodel\env3\td3\Critic2_net_step1000.pth'
 
     agent.load(model_path1, model_path2, model_path3, device)
     return agent
 
 
-def load_ppo_model(env, model_path, args):
-    """加载PPO模型"""
-    # 创建PPO配置
-    config = PPOConfig(args)
-    agent = PPO(env, config)
-    agent.ac.load_state_dict(torch.load(model_path,map_location='cpu'))
-    return agent
+# def load_ppo_model(env, model_path, args):
+#     """加载PPO模型"""
+#     # 创建PPO配置
+#     config = PPOConfig(args)
+#     agent = PPO(env, config)
+#     agent.ac.load_state_dict(torch.load(model_path,map_location='cpu'))
+#     return agent
+
 
 def sample_td3_data(args, env, agent, batch_size):
     states = []
     actions = []
-    episodes = 1
+    episodes = 10
     samples = 256
+
     for i in range(samples):
         for i in range(episodes):
+            # print('*'*100)
+            rewards = 0
             state = env.reset()
             while True:
                 if args.render:
                     env.render()
                 action = agent.select_action(state)
+                noise = np.random.normal(scale=0.2,size = action.shape)
+                action = action+noise
+
+                # print(action)
+                next_state, reward, done, info = env.step(action)
+                # if reward >0:
                 states.append(state)
                 actions.append(action)
-                next_state, reward, done, info = env.step(action)
+                rewards += reward
                 state = next_state
                 if done:
                     break
+            print(rewards)
         env.close()
     assert batch_size <= len(states)
     index = random.sample(range(len(states)), batch_size)
-    states = [states[i] for i in index]
-    actions = [actions[i] for i in index]
+    # states = [states[i] for i in index]
+    # actions = [actions[i] for i in index]
 
     return index, np.array(states), np.array(actions)
 
@@ -119,7 +134,7 @@ def evaluate_astar_reward(args, path):
 # print(f"index:{index},actions{actions}")
 
 
-def sample_expert_data(env, args, batch_size):
+def sample_expert_data(args, env, agent, batch_size):
     # 获取A*路径并评估
     # path = Astar_teacher(args)
     # if path is not None:
@@ -130,7 +145,7 @@ def sample_expert_data(env, args, batch_size):
     pairs, states, actions = get_pair(env, args)
 
     
-    return 0, states[:], actions[:]  # 保持原有返回格式
+    return 0, states, actions  # 保持原有返回格式
 
 # args = args.get_args()
 # env = Environment(env_type=args.env_type)
@@ -144,7 +159,7 @@ if __name__ == '__main__':
     args = args.get_args()
     env = Environment(env_type=args.env_type)
     agent = load_td3_model(env)
-    index, states, actions = sample_td3_data(env, agent, batch_size = 5)
+    index, states, actions = sample_td3_data(args, env, agent, batch_size=5)
     print(f"index:{index},actions{actions}")
 
 

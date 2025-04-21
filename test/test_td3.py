@@ -7,14 +7,15 @@ import torch
 from env.environment import Environment
 from agent.td3 import TD3
 from args import get_test_args
-from utils.utils import save
+from utils.utils import save_3d, calculate_path_length
+from curvature_plot3d import compute_total_curvature
+import time
 
 
 
-
-model_path1 = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\models\td3model\env3\actor\Actor_net_step1000.pth'
-model_path2 = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\models\td3model\env3\critic1\Critic1_net_step1000.pth'
-model_path3 = r'C:\Users\xinggang.dong\Desktop\6K\Chaper2\train\results\td3model\env3\critic2\Critic2_net_step1000.pth'
+model_path1 = r'../finalresult/savemodel/env5/td3/Actor_net_step1000.pth'
+model_path2 = r'../finalresult/savemodel/env5/td3\Critic1_net_step1000.pth'
+model_path3 = r'../finalresult/savemodel/env5/td3\Critic2_net_step1000.pth'
 
 
 
@@ -60,7 +61,7 @@ def test_model():
         path_points = [env.position.copy()]
 
         print(f"\n测试回合 {i + 1}/{args.test_episodes}")
-
+        start_time = time.time()
         while True:
             if args.render:
                 env.render()
@@ -76,18 +77,21 @@ def test_model():
                 if info.get('distance_to_goal', 1.0) < env.delta / env.max_distance:
                     success_count += 1
                 break
-
+        end_time = time.time()
         total_rewards.append(episode_reward)
         total_steps.append(steps)
 
         print(f"回合奖励: {episode_reward:.2f}")
         print(f"步数: {steps}")
-        save(path_points, env.obstacles, env, args, i)
+        save_3d(path_points, env.obstacles, env, args, i)
 
     print(f"\n{'=' * 20} 测试结果 {'=' * 20}")
     print(f"平均奖励: {np.mean(total_rewards):.2f} ± {np.std(total_rewards):.2f}")
     print(f"平均步数: {np.mean(total_steps):.2f} ± {np.std(total_steps):.2f}")
     print(f"成功率: {success_count / args.test_episodes * 100:.2f}%")
+    print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path_points)}")
+    print(f"\n{'=' * 20} 路径曲率 {'=' * 20} \n{compute_total_curvature(path_points)}")
+    print(f"运行时间: {end_time - start_time:.2f} 秒")
 
     env.close()
 

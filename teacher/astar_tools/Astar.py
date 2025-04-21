@@ -13,7 +13,7 @@ def f_is_safe(point_f, env_f, epsilon = 0.5):
     return True
 
 # 判断两个点之间是否有点在障碍物里
-def is_mid_safe(point1,point2, env, step=100):
+def is_mid_safe(point1,point2, env, step=90):
     x1, y1, z1 = point1
     x2, y2, z2 = point2
     x_mid = np.linspace(x1, x2, step)
@@ -42,7 +42,7 @@ def f_neighbors(node, random_step=True):
     temp_z = node[2]
     
     # 基础步长
-    base_step = 0.8
+    base_step = 1.5
     
     # 可能的方向
     directions = [-1, 0, 1]
@@ -204,7 +204,7 @@ def Astar(start, goal, env, randomization=0.1):
     open_set.append(node_s)
     
     for _ in range(100000):
-        if random.random() < 0.15:
+        if random.random() < 0.2:
             candidates = sorted(open_set, key=lambda x: x[5])[:3]
             if candidates:
                 node_c = random.choice(candidates)

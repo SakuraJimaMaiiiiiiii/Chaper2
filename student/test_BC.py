@@ -4,9 +4,17 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from env.environment import Environment
 import numpy as np
-from student.BC import BehaviorCloning as student_BC
-from utils.utils import save
+from student.BC import student_BC
+from utils.utils import save_3d, calculate_path_length
 from args import get_test_args
+import time
+from curvature_plot3d import compute_total_curvature
+
+
+
+
+
+
 
 
 def load_BC_model(env, model_path):
@@ -15,7 +23,7 @@ def load_BC_model(env, model_path):
     max_action = float(env.action_space.high[0])
     agent = student_BC(state_dim, action_dim, max_action)
     agent.load(model_path)
-    agent.net.to('cuda')
+    # agent.net.to('cuda')
     return agent
 
 
@@ -39,9 +47,8 @@ def test_BC(args, model_path):
         episode_reward = 0
         steps = 0
         path_points = [env.position.copy()]
-
         print(f"\n测试回合 {i + 1}/{args.test_episodes}")
-
+        start_time = time.time()
         while True:
             if args.render:
                 env.render()
@@ -67,13 +74,27 @@ def test_BC(args, model_path):
 
             print(f"回合奖励: {episode_reward:.2f}")
             print(f"步数: {steps}")
-            save(path_points, env.obstacles, env, args, i)
 
+            save_3d(path_points, env.obstacles, env, args, i)
+            '''
+            保存路径
+            '''
+            dir = r'E:\files\code\硕士论文code\Chaper2'
+            point_path = f"{dir}/BC.txt"
+            with open(point_path, 'w') as f:
+                for point in path_points:
+                    f.write(f"{point}\n")
+            print(f'路径已保存至{point_path}')
+
+
+        end_time = time.time()
         print(f"\n{'=' * 20} 测试结果 {'=' * 20}")
         print(f"平均奖励: {np.mean(total_rewards):.2f} ± {np.std(total_rewards):.2f}")
         print(f"平均步数: {np.mean(total_steps):.2f} ± {np.std(total_steps):.2f}")
         print(f"成功率: {success_count / args.test_episodes * 100:.2f}%")
-
+        print(f"运行时间: {end_time - start_time:.2f} 秒")
+        print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path_points)}")
+        print(f"\n{'=' * 20} 路径曲率 {'=' * 20} \n{compute_total_curvature(path_points)}")
 
         env.close()
 
@@ -81,5 +102,5 @@ def test_BC(args, model_path):
 
 if __name__ == '__main__':
     args = get_test_args()
-    model_path = r'E:\files\论文\IL\student\BCresult\models\env3\22\TD3\Actor_net_TD3.pth'
+    model_path = r'E:\files\code\硕士论文code\Chaper2\student\models\env5\BC\seed_2023\BC_final.pth'
     test_BC(args, model_path)

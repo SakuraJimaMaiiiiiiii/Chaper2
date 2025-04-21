@@ -9,10 +9,10 @@ def get_args():
                         help='选择训练算法(ppo或td3)')
 
     parser.add_argument('--env_type', type=str, choices=['env3', 'env4', 'env5', 'env1', 'env2', 'env3'],
-                        default='env3', help='选择环境类型')
+                        default='env5', help='选择环境类型')
 
     parser.add_argument('--render', type=bool, default=False, help='是否渲染环境')
-    parser.add_argument('--seed', type=int, default=22, choices=[42, 32, 22], help='随机种子')
+    parser.add_argument('--seed', type=int, default=32, choices=[42, 32, 22], help='随机种子')
     parser.add_argument('--max_episodes', type=int, default=1000, help='最大训练回合数')
 
     parser.add_argument('--model_path', type=str, default='models/td3_env3', help='模型保存路径')
@@ -64,10 +64,10 @@ def get_args():
 def get_test_args():
     parser = argparse.ArgumentParser()
     # 测试代码的参数
-    parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3','Dagger','GAIL'], default='Dagger',
+    parser.add_argument('--algorithm', type=str, choices=['ppo', 'td3','Dagger','GAIL'], default='GAIL',
                         help='选择测试算法(ppo或td3)')
     parser.add_argument('--env_type', type=str, choices=['env1', 'env2', 'env3', 'env4', 'env5'],
-                        default='env3', help='选择环境类型')
+                        default='env5', help='选择环境类型')
     parser.add_argument('--render', type=bool, default=True,
                         help='是否渲染环境')
     parser.add_argument('--test_episodes', type=int, default=5,

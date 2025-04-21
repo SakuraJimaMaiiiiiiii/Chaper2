@@ -19,16 +19,17 @@ class TrainingLogger:
         self.window_size = 20
         
        
-        plt.style.use('seaborn')
+        # plt.style.use('seaborn')
+        sns.set_theme()
         mpl.rcParams['font.sans-serif'] = ['SimHei']
         mpl.rcParams['font.family'] = 'sans-serif'
         mpl.rcParams['axes.unicode_minus'] = False
         mpl.rcParams['figure.figsize'] = (12, 8)
         mpl.rcParams['figure.dpi'] = 300
         mpl.rcParams['savefig.dpi'] = 300
-        mpl.rcParams['font.size'] = 12
-        mpl.rcParams['axes.titlesize'] = 14
-        mpl.rcParams['axes.labelsize'] = 12
+        mpl.rcParams['font.size'] = 25
+        mpl.rcParams['axes.titlesize'] = 25
+        mpl.rcParams['axes.labelsize'] = 25
         
         # 创建日志目录
         self.log_dir = f"logs/{args.algorithm}_{args.env_type}_{args.seed}"
@@ -62,7 +63,7 @@ class TrainingLogger:
         print(f"├── 路径长度: {path_length}")
         print(f"└── 平均长度: {avg_length:.2f}")
 
-    def save_data(self):
+    def save_data(self,seed):
   
         data = {
             'rewards': self.rewards,
@@ -73,7 +74,7 @@ class TrainingLogger:
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
-        filename = os.path.join(self.log_dir, 'training_data.json')
+        filename = os.path.join(self.log_dir, f'training_data_seed{seed}.json')
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
  
@@ -187,13 +188,13 @@ class TrainingLogger:
         
         plt.tight_layout()
         fig.savefig(os.path.join(self.log_dir, 'comparison_curves.png'), 
-                    bbox_inches='tight', dpi=300)
+                    bbox_inches='tight', dpi=600)
         plt.close(fig)
         print(f"对比曲线已保存至: {self.log_dir}/comparison_curves.png")
 
-    def save_all(self):
+    def save_all(self,seed):
         """保存所有数据和可视化结果"""
-        self.save_data()
+        self.save_data(seed)
         self.plot_curves()
         self.plot_comparison()
         print("\n所有结果已保存完成！")
@@ -229,6 +230,11 @@ def show_obs2(ax, coords, plane='xy'):
     ax.add_patch(rect)
 
 
+
+
+
+
+
 def save(path_points, obstacles, env, args, episode_idx):
     save_dir = f"test_results/{args.algorithm}_{args.env_type}"
     os.makedirs(save_dir, exist_ok=True)
@@ -245,30 +251,32 @@ def save(path_points, obstacles, env, args, episode_idx):
         x2, y2, z2 = p2
         show_obs(ax1, x1, y1, z1, x2, y2, z2)
 
-    ax1.plot(path_points[:, 0], path_points[:, 1], path_points[:, 2], 'b-', label='路径', linewidth=2)
+    ax1.plot(path_points[:, 0], path_points[:, 1], path_points[:, 2], 'b-', label='path', linewidth=2)
     ax1.scatter(path_points[0, 0], path_points[0, 1], path_points[0, 2],
-                color='g', s=80, label='起点')
+                color='g', s=80, label='start')
     ax1.scatter(path_points[-1, 0], path_points[-1, 1], path_points[-1, 2],
-                color='r', s=80, label='终点')
-    ax1.set_xlabel('X轴')
-    ax1.set_ylabel('Y轴')
-    ax1.set_zlabel('Z轴')
-    ax1.set_title('3D路径图')
+                color='r', s=80, label='goal')
+    ax1.set_xlabel('X-axis', fontsize=20)
+    ax1.set_ylabel('Y-axis', fontsize=20)
+    ax1.set_zlabel('Z-axis', fontsize=20)
+    ax1.set_title('3DPlot', fontsize=20)
     ax1.set_xlim(0, env.grid_size)
     ax1.set_ylim(0, env.grid_size)
     ax1.set_zlim(0, env.grid_size)
-    ax1.legend()
+    ax1.legend(fontsize=15)
+
+
 
     ax2 = fig.add_subplot(222)
 
     for coords in obstacles:
         show_obs2(ax2, coords, plane='xy')
     ax2.plot(path_points[:, 0], path_points[:, 1], 'b-', linewidth=2)
-    ax2.scatter(path_points[0, 0], path_points[0, 1], color='g', s=100, label='起点')
-    ax2.scatter(path_points[-1, 0], path_points[-1, 1], color='r', s=100, label='终点')
-    ax2.set_xlabel('X轴')
-    ax2.set_ylabel('Y轴')
-    ax2.set_title('俯视图 (X-Y平面)')
+    ax2.scatter(path_points[0, 0], path_points[0, 1], color='g', s=100, label='start')
+    ax2.scatter(path_points[-1, 0], path_points[-1, 1], color='r', s=100, label='goal')
+    ax2.set_xlabel('X-axis')
+    ax2.set_ylabel('Y-axis')
+    ax2.set_title('Top view (X-Y plane)')
     ax2.grid(True)
     ax2.set_xlim(0, env.grid_size)
     ax2.set_ylim(0, env.grid_size)
@@ -279,11 +287,11 @@ def save(path_points, obstacles, env, args, episode_idx):
     for coords in obstacles:
         show_obs2(ax3, coords, plane='xz')
     ax3.plot(path_points[:, 0], path_points[:, 2], 'b-', linewidth=2)
-    ax3.scatter(path_points[0, 0], path_points[0, 2], color='g', s=100, label='起点')
-    ax3.scatter(path_points[-1, 0], path_points[-1, 2], color='r', s=100, label='终点')
-    ax3.set_xlabel('X轴')
-    ax3.set_ylabel('Z轴')
-    ax3.set_title('主视图 (X-Z平面)')
+    ax3.scatter(path_points[0, 0], path_points[0, 2], color='g', s=100, label='start')
+    ax3.scatter(path_points[-1, 0], path_points[-1, 2], color='r', s=100, label='goal')
+    ax3.set_xlabel('X-axis')
+    ax3.set_ylabel('Z-axis')
+    ax3.set_title('Main view (X-Z plane)')
     ax3.grid(True)
     ax3.set_xlim(0, env.grid_size)
     ax3.set_ylim(0, env.grid_size)
@@ -294,11 +302,11 @@ def save(path_points, obstacles, env, args, episode_idx):
     for coords in obstacles:
         show_obs2(ax4, coords, plane='yz')
     ax4.plot(path_points[:, 1], path_points[:, 2], 'b-', linewidth=2)
-    ax4.scatter(path_points[0, 1], path_points[0, 2], color='g', s=100, label='起点')
-    ax4.scatter(path_points[-1, 1], path_points[-1, 2], color='r', s=100, label='终点')
-    ax4.set_xlabel('Y轴')
-    ax4.set_ylabel('Z轴')
-    ax4.set_title('侧视图 (Y-Z平面)')
+    ax4.scatter(path_points[0, 1], path_points[0, 2], color='g', s=100, label='start')
+    ax4.scatter(path_points[-1, 1], path_points[-1, 2], color='r', s=100, label='goal')
+    ax4.set_xlabel('Y-axis')
+    ax4.set_ylabel('Z-axis')
+    ax4.set_title('Side view (Y-Z plane)')
     ax4.grid(True)
     ax4.set_xlim(0, env.grid_size)
     ax4.set_ylim(0, env.grid_size)
@@ -306,10 +314,12 @@ def save(path_points, obstacles, env, args, episode_idx):
 
     plt.tight_layout()
 
-    save_path = f"{save_dir}/result_{episode_idx + 1}.png"
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    save_path = f"{save_dir}/result_{episode_idx + 1}.pdf"
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
     plt.close()
     return save_dir
+
+
 
 
 
@@ -346,3 +356,48 @@ def calculate_path_length(path):
         total_length += distance
 
     return total_length
+
+
+
+
+
+
+
+
+
+def save_3d(path_points, obstacles, env, args, episode_idx):
+    save_dir = f"test_results/{args.algorithm}_{args.env_type}"
+    os.makedirs(save_dir, exist_ok=True)
+    print(save_dir)
+
+    path_points = np.array(path_points)
+
+    fig = plt.figure(figsize=(20, 15))
+
+    ax1 = fig.add_subplot(111, projection='3d')
+
+    for (p1, p2) in obstacles:
+        x1, y1, z1 = p1
+        x2, y2, z2 = p2
+        show_obs(ax1, x1, y1, z1, x2, y2, z2)
+
+    ax1.plot(path_points[:, 0], path_points[:, 1], path_points[:, 2], 'b-', label='path', linewidth=5)
+    ax1.scatter(path_points[0, 0], path_points[0, 1], path_points[0, 2],
+                color='g', s=150, label='start')
+    ax1.scatter(path_points[-1, 0], path_points[-1, 1], path_points[-1, 2],
+                color='r', s=150, label='goal')
+    ax1.set_xlabel('X-axis', fontsize=20)
+    ax1.set_ylabel('Y-axis', fontsize=20)
+    ax1.set_zlabel('Z-axis', fontsize=20)
+    ax1.set_title('3DPlot', fontsize=40)
+    ax1.set_xlim(0, env.grid_size)
+    ax1.set_ylim(0, env.grid_size)
+    ax1.set_zlim(0, env.grid_size)
+    ax1.legend(fontsize=30)
+
+    plt.tight_layout()
+
+    save_path = f"{save_dir}/result_{episode_idx + 1}.pdf"
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+    plt.close()
+    return save_dir

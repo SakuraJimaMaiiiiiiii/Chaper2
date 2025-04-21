@@ -1,16 +1,16 @@
-import torch
 import sys
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from env.environment import Environment
 import numpy as np
-from student.BC import BehaviorCloning as student_BC
-from utils.utils import save
+from utils.utils import save_3d, calculate_path_length
 from args import get_test_args
 from student.DAgger import DAgger
-from student.GAIL import GAIL
-from student.TD3_student import TD3_student
+from curvature_plot3d import compute_total_curvature
+import time
+
+
 
 def load_DAgger_model(env, model_path):
     state_dim = env.observation_space.shape[0]
@@ -29,7 +29,7 @@ def test_DAgger(args, model_path):
     agent = load_DAgger_model(env, model_path)
 
     print(f"\n{'=' * 20} 开始测试 {'=' * 20}")
-    print(f"算法: BC")
+    print(f"算法: Dagger")
     print(f"环境: {args.env_type}")
     print(f"模型路径: {model_path}\n")
 
@@ -45,7 +45,7 @@ def test_DAgger(args, model_path):
         path_points = [env.position.copy()]
 
         print(f"\n测试回合 {i + 1}/{args.test_episodes}")
-
+        start_time = time.time()
         while True:
             if args.render:
                 env.render()
@@ -71,18 +71,31 @@ def test_DAgger(args, model_path):
 
             print(f"回合奖励: {episode_reward:.2f}")
             print(f"步数: {steps}")
-            save(path_points, env.obstacles, env, args, i)
+            save_3d(path_points, env.obstacles, env, args, i)
 
+            '''
+            保存路径
+            '''
+            dir = r'E:\files\code\硕士论文code\Chaper2'
+            point_path = f"{dir}/Dagger.txt"
+            with open(point_path, 'w') as f:
+                for point in path_points:
+                    f.write(f"{point}\n")
+            print(f'路径已保存至{point_path}')
+
+        end_time = time.time()
         print(f"\n{'=' * 20} 测试结果 {'=' * 20}")
         print(f"平均奖励: {np.mean(total_rewards):.2f} ± {np.std(total_rewards):.2f}")
         print(f"平均步数: {np.mean(total_steps):.2f} ± {np.std(total_steps):.2f}")
         print(f"成功率: {success_count / args.test_episodes * 100:.2f}%")
-
+        print(f"运行时间: {end_time - start_time:.2f} 秒")
+        print(f"\n{'=' * 20} 路径长度 {'=' * 20} \n{calculate_path_length(path_points)}")
+        print(f"\n{'=' * 20} 路径曲率 {'=' * 20} \n{compute_total_curvature(path_points)}")
 
         env.close()
 
 
 if __name__ == '__main__':
     args = get_test_args()
-    model_path = r'E:\files\论文\IL\student\results\models\DAgger\env3\DAgger_final.pth'
+    model_path = r'E:\files\code\硕士论文code\Chaper2\student\models\env5\DAgger\seed_42\DAgger_final.pth'
     test_DAgger(args, model_path)
